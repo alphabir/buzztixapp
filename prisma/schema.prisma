@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          String       @id @default(uuid())
+  title       String
+  artist      String
+  date        String
+  time        String
+  venue       String
+  location    String
+  price       String
+  category    String
+  image       String
+  description String
+  lineup      String[]
+  isFeatured  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ticketTypes TicketType[]
+  bookings    Booking[]
+}
+
+model TicketType {
+  id          String   @id @default(uuid())
+  name        String
+  price       Float
+  description String
+  available   Int
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String?
+  email     String    @unique
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
+model Booking {
+  id            String   @id @default(uuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id])
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  totalAmount   Float
+  bookingDate   DateTime @default(now())
+  status        String   @default("confirmed")
+  qrCode        String   // Added QR code field
+  tickets       Ticket[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Ticket {
+  id        String  @id @default(uuid())
+  type      String
+  quantity  Int
+  price     Float
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
